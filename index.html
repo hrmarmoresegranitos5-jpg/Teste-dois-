@@ -137,11 +137,11 @@ window.addEventListener('load',function(){
         </div>
         <div class="sec">
           <div class="sl">Material</div>
-          <div id="matScroll"></div>
+          <div id="matArea"></div>
         </div>
-        <div id="ambientesWrap"></div>
+        <div id="ambientesList"></div>
         <div class="sec">
-          <button class="btn btn-o mt6" id="btnAddAmb" style="font-size:.78rem;padding:10px;width:100%;">+ Adicionar Ambiente</button>
+          <button class="btn btn-o mt6" id="btnAddAmbiente" style="font-size:.78rem;padding:10px;width:100%;">+ Adicionar Ambiente</button>
         </div>
         <div class="sec">
           <div class="sl">IA</div>
@@ -149,17 +149,16 @@ window.addEventListener('load',function(){
         </div>
         <div class="sec mt">
           <div class="sl">Resultado</div>
-          <div class="card" id="resultCard" style="display:none;">
-            <div id="resultRows"></div>
-            <div class="rtot"><span class="k">À Vista</span><span class="v" id="rVista">R$ 0,00</span></div>
-            <div class="rtot" style="padding-top:6px;border-top:none;"><span class="k" style="font-size:.75rem;color:var(--t3);">Parcelado 8× +12%</span><span class="v" style="font-size:1.1rem;" id="rParc">R$ 0,00</span></div>
+          <div id="resArea" style="display:none;">
+            <div class="card" id="resDetail" style="margin-bottom:10px;"></div>
+            <div class="card" id="painelInterno" style="margin-bottom:10px;"></div>
           </div>
         </div>
         <div class="sec mt" style="padding-bottom:4px;">
           <button class="btn btn-g mt" id="btnCalc">Calcular Orçamento</button>
         </div>
         <div id="quotebox" style="display:none;padding:0 17px 8px;">
-          <div class="qbox" id="quotetext"></div>
+          <div class="qbox" id="quoteBox"></div>
           <div class="row mt6"><button class="btn btn-g" id="btnCopy" style="flex:1;">📋 Copiar</button><button class="btn btn-o" id="btnPDF" style="flex:1;">📄 PDF</button></div>
           <button class="btn btn-o mt" id="btnSaveAg">📅 Salvar na Agenda</button>
         </div>
@@ -379,29 +378,29 @@ window.addEventListener('load',function(){
         <!-- Grupo: À vista / Dinheiro -->
         <div style="font-size:.5rem;color:var(--t4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;margin-top:2px;">💰 À Vista / Dinheiro</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;" id="contrPgBtns">
-          <button class="contr-pg-btn on" data-pg="50_50" onclick="selContrPg('50_50')">50%+50%</button>
-          <button class="contr-pg-btn" data-pg="30_70" onclick="selContrPg('30_70')">30%+70%</button>
-          <button class="contr-pg-btn" data-pg="40_60" onclick="selContrPg('40_60')">40%+60%</button>
-          <button class="contr-pg-btn" data-pg="60_40" onclick="selContrPg('60_40')">60%+40%</button>
-          <button class="contr-pg-btn" data-pg="3x" onclick="selContrPg('3x')">3× iguais</button>
-          <button class="contr-pg-btn" data-pg="vista" onclick="selContrPg('vista')">100% Vista</button>
+          <button class="contr-pg-btn on" data-cpg="50_50" onclick="selContrPg('50_50')">50%+50%</button>
+          <button class="contr-pg-btn" data-cpg="30_70" onclick="selContrPg('30_70')">30%+70%</button>
+          <button class="contr-pg-btn" data-cpg="40_60" onclick="selContrPg('40_60')">40%+60%</button>
+          <button class="contr-pg-btn" data-cpg="60_40" onclick="selContrPg('60_40')">60%+40%</button>
+          <button class="contr-pg-btn" data-cpg="3x" onclick="selContrPg('3x')">3× iguais</button>
+          <button class="contr-pg-btn" data-cpg="vista" onclick="selContrPg('vista')">100% Vista</button>
         </div>
 
         <!-- Grupo: Cartão -->
         <div style="font-size:.5rem;color:var(--t4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;">💳 Cartão</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
-          <button class="contr-pg-btn" data-pg="cartao_parc" onclick="selContrPg('cartao_parc')" style="grid-column:span 1;">Crédito Parcelado</button>
-          <button class="contr-pg-btn" data-pg="debito" onclick="selContrPg('debito')" style="grid-column:span 1;">Débito</button>
+          <button class="contr-pg-btn" data-cpg="cartao_parc" onclick="selContrPg('cartao_parc')" style="grid-column:span 1;">Crédito Parcelado</button>
+          <button class="contr-pg-btn" data-cpg="debito" onclick="selContrPg('debito')" style="grid-column:span 1;">Débito</button>
         </div>
 
         <!-- Grupo: Boleto -->
         <div style="font-size:.5rem;color:var(--t4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;">🎫 Boleto / Pix Agendado</div>
         <div style="display:grid;grid-template-columns:1fr;gap:6px;margin-bottom:10px;">
-          <button class="contr-pg-btn" data-pg="boleto" onclick="selContrPg('boleto')">Boleto Bancário</button>
+          <button class="contr-pg-btn" data-cpg="boleto" onclick="selContrPg('boleto')">Boleto Bancário</button>
         </div>
 
         <!-- Personalizado -->
-        <button class="contr-pg-btn" data-pg="personalizado" onclick="selContrPg('personalizado')" style="width:100%;text-align:center;">✏️ Personalizado</button>
+        <button class="contr-pg-btn" data-cpg="personalizado" onclick="selContrPg('personalizado')" style="width:100%;text-align:center;">✏️ Personalizado</button>
 
         <!-- Seção: Cartão Parcelado -->
         <div id="contrParcSection" style="display:none;margin-top:10px;background:rgba(96,160,224,.06);border:1px solid rgba(96,160,224,.2);border-radius:10px;padding:12px;flex-direction:column;gap:8px;">
@@ -552,47 +551,6 @@ window.addEventListener('load',function(){
 
 
 
-
-<!-- ══ MODAL: SERVIÇO PERSONALIZADO ══ -->
-<div class="ov" id="customSvMd" style="align-items:flex-end;">
-  <div style="background:var(--s2);border-top:1px solid var(--bd);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:22px 22px 40px;animation:slideUp .3s ease;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
-      <div>
-        <div id="customSvMdTitle" style="font-size:1rem;font-weight:700;color:var(--gold2);">Serviço Personalizado</div>
-        <div style="font-size:.68rem;color:var(--t3);margin-top:2px;">Adicione qualquer serviço com valor livre</div>
-      </div>
-      <button onclick="closeAll()" style="background:none;border:none;color:var(--t3);font-size:1.2rem;cursor:pointer;padding:4px;">✕</button>
-    </div>
-
-    <div style="display:flex;flex-direction:column;gap:12px;">
-      <div class="f">
-        <label style="font-size:.6rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold3);font-weight:700;">Nome do Serviço *</label>
-        <input id="customSvNome" type="text" placeholder="Ex: Estrutura metálica, Reforço premium…"
-          style="width:100%;background:var(--s3);border:1px solid var(--bd2);border-radius:10px;padding:11px 13px;color:var(--tx);font-family:Outfit,sans-serif;font-size:.88rem;outline:none;margin-top:5px;">
-      </div>
-
-      <div class="f">
-        <label style="font-size:.6rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);font-weight:700;">Descrição <span style="color:var(--t4);font-size:.55rem;">(opcional)</span></label>
-        <input id="customSvDesc" type="text" placeholder="Ex: Instalação de estrutura de apoio sob bancada"
-          style="width:100%;background:var(--s3);border:1px solid var(--bd2);border-radius:10px;padding:11px 13px;color:var(--tx);font-family:Outfit,sans-serif;font-size:.85rem;outline:none;margin-top:5px;">
-      </div>
-
-      <div class="f">
-        <label style="font-size:.6rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold3);font-weight:700;">Valor (R$) *</label>
-        <div style="position:relative;margin-top:5px;">
-          <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:.85rem;font-weight:700;">R$</span>
-          <input id="customSvValor" type="number" min="0" step="0.01" placeholder="0,00"
-            style="width:100%;background:var(--s3);border:1px solid var(--bd2);border-radius:10px;padding:11px 13px 11px 36px;color:var(--tx);font-family:Outfit,sans-serif;font-size:.95rem;font-weight:700;outline:none;">
-        </div>
-      </div>
-    </div>
-
-    <div style="display:flex;gap:10px;margin-top:20px;">
-      <button onclick="closeAll()" class="btn" style="flex:1;padding:13px;font-size:.82rem;">Cancelar</button>
-      <button onclick="saveCustomSv()" class="btn btn-g" style="flex:2;padding:13px;font-size:.85rem;font-weight:800;">✓ Salvar Serviço</button>
-    </div>
-  </div>
-</div>
 
 <!-- ══ SCRIPTS — ordem importa ══ -->
 <script src="data.js"></script>

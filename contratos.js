@@ -920,7 +920,7 @@ function gerarContrato(id, e){
 
 function selContrPg(tipo){
   document.querySelectorAll('.contr-pg-btn').forEach(function(b){b.classList.remove('on');});
-  var btn=document.querySelector('[data-pg="'+tipo+'"]');if(btn)btn.classList.add('on');
+  var btn=document.querySelector('[data-cpg="'+tipo+'"]');if(btn)btn.classList.add('on');
   // Mostrar/ocultar seções conforme tipo
   var custom=document.getElementById('contrPgCustom');
   var parcSection=document.getElementById('contrParcSection');
@@ -953,7 +953,7 @@ function confirmarContrato(){
   var q=DB.q.find(function(x){return x.id==id;});
   if(!q){toast('Orçamento não encontrado');return;}
   var pgBtn=document.querySelector('.contr-pg-btn.on');
-  var pgTipo=pgBtn?pgBtn.dataset.pg:'50_50';
+  var pgTipo=pgBtn?(pgBtn.dataset.cpg||pgBtn.dataset.pg):'50_50';
   // Dados de parcelamento no cartão
   var parc=+document.getElementById('contrParc').value||0;
   var taxa=+document.getElementById('contrTaxa').value||12;
