@@ -343,7 +343,7 @@ function dispatch(e){
   el=e.target.closest('#btnAI');if(el){document.getElementById('aiDesc').value='';document.getElementById('aiStatus').textContent='';document.getElementById('aiStatus').className='ai-status';document.getElementById('aiResultBox').style.display='none';document.getElementById('btnAIAplicar').style.display='none';showMd('aiMd');return;}
   el=e.target.closest('#btnAIEnviar');if(el){aiInterpretar();return;}
   el=e.target.closest('#btnAIAplicar');if(el){aiAplicar();return;}
-  el=e.target.closest('.btn-contrato');if(el){gerarContrId(el,e);return;}
+  el=e.target.closest('.btn-contrato');if(el&&el.dataset.cid){gerarContrId(el,e);return;}
   el=e.target.closest('#btnCalc');if(el){calcular();return;}
   el=e.target.closest('#btnCopy');if(el){copiar();return;}
   el=e.target.closest('#btnPDF');if(el){gerarPDF();return;}
