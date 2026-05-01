@@ -325,14 +325,26 @@ window.aplicarEstiloNi=function(){
 function openApp(pg){
   var splash=document.getElementById('sSplash');
   var a=document.getElementById('sApp');
-  if(splash){splash.classList.remove('on');splash.style.display='none';}
-  if(a){a.classList.add('on');a.style.display='block';}
-  setLayout();
-  requestAnimationFrame(function(){
+
+  // Animação de saída da splash (PASSO 4 — Módulo 1)
+  if(splash){
+    splash.style.transition='opacity .55s ease, transform .55s ease';
+    splash.style.opacity='0';
+    splash.style.transform='scale(1.05)';
+  }
+
+  setTimeout(function(){
+    if(splash){splash.classList.remove('on');splash.style.display='none';}
+    if(a){a.classList.add('on');a.style.display='block';}
     setLayout();
-    go(pg);
-    setTimeout(function(){setLayout();},100);
-  });
+    requestAnimationFrame(function(){
+      setLayout();
+      go(pg);
+      // Segundo setLayout após go() para garantir que pages tem altura correta
+      setTimeout(function(){setLayout();},80);
+    });
+  },560);
+
   window._pendingPg=null;
 }
 function voltarSplash(){
@@ -358,9 +370,11 @@ function go(n){
   var _sApp=document.getElementById('sApp');
   var _sSplash=document.getElementById('sSplash');
   var _sIntro=document.getElementById('sIntro');
-  if(_sApp){_sApp.classList.add('on');}
-  if(_sSplash){_sSplash.classList.remove('on');_sSplash.style.display='none';}
-  if(_sIntro){_sIntro.style.display='none';}
+  // Só ativa sApp se ele ainda não está ativo (não forçar durante init)
+  if(_sApp&&_sApp.classList.contains('on')){
+    if(_sSplash){_sSplash.classList.remove('on');_sSplash.style.display='none';}
+    if(_sIntro){_sIntro.style.display='none';}
+  }
   var actualId=n===7?'2b':n;
   document.querySelectorAll('.ni').forEach(function(t){t.classList.toggle('on',+t.dataset.pg===n);});
   document.querySelectorAll('.pg').forEach(function(p){
