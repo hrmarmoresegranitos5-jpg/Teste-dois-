@@ -97,27 +97,38 @@ var selMat=null,pendQ=null,fType='in',catF='Todos',cubaCat='coz',cfgTab=0,editTr
 var ambientes=[];
 var _cubaPickKey=null;
 
-// ═══ BLINDAGEM GLOBAL DE ERROS (FASE 1 — item 1.1) ═══
-// Captura erros JS não tratados e evita tela preta.
-window.addEventListener('error',function(e){
-  console.error('[HR] Erro global:',e.message,'|',e.filename,'linha',e.lineno);
-  // Se o shell ficou preto por uma falha antes de sApp.on, corrige a cor
-  try{
-    var shell=document.getElementById('shell');
-    if(shell&&(shell.style.background==='rgb(7, 7, 9)'||shell.style.background==='#070709')){
-      shell.style.background='var(--bg)';
-    }
-  }catch(_){}
-  // Toast seguro: usa a função se já carregou, senão cria alerta inline
-  try{toast('⚠️ Erro interno. Tente novamente.');}catch(_){
-    var t=document.getElementById('toast');
-    if(t){t.textContent='⚠️ Erro interno.';t.classList.add('on');setTimeout(function(){t.classList.remove('on');},3000);}
+// ═══ BLINDAGEM GLOBAL DE ERROS — MÓDULO 1 ═══
+// Intercepta QUALQUER erro JS antes de tudo — impede tela preta e mostra crash screen.
+console.log('[HR] App iniciando...');
+
+window.onerror=function(msg,src,line,col,error){
+  console.error('[HR ERROR]',{msg:msg,src:src,line:line,col:col,error:error});
+  var err=document.getElementById('globalCrash');
+  if(!err){
+    err=document.createElement('div');
+    err.id='globalCrash';
+    err.style.cssText='position:fixed;inset:0;z-index:999999;background:linear-gradient(180deg,#120f08,#1b1409);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:Outfit,sans-serif;padding:24px;text-align:center;';
+    err.innerHTML='<div style="font-size:65px;margin-bottom:15px;">⚠️</div>'
+      +'<div style="font-size:22px;font-weight:700;color:#C9A84C;margin-bottom:8px;">Erro interno detectado</div>'
+      +'<div style="font-size:13px;opacity:.7;max-width:280px;line-height:1.5;margin-bottom:6px;">O sistema encontrou um erro durante a inicialização.</div>'
+      +'<div style="font-size:11px;opacity:.45;max-width:300px;line-height:1.4;word-break:break-all;margin-bottom:20px;">'+msg+' (linha '+line+')</div>'
+      +'<button onclick="location.reload()" style="background:#C9A84C;border:none;color:#111;padding:12px 22px;border-radius:14px;font-weight:700;cursor:pointer;font-family:Outfit,sans-serif;font-size:15px;">Recarregar Sistema</button>'
+      +'<button onclick="localStorage.clear();location.reload()" style="margin-top:10px;background:transparent;border:1px solid rgba(201,168,76,.3);color:rgba(201,168,76,.6);padding:9px 18px;border-radius:12px;font-weight:600;cursor:pointer;font-family:Outfit,sans-serif;font-size:12px;">Limpar dados e recarregar</button>';
+    document.body.appendChild(err);
   }
-});
-// Captura Promises rejeitadas sem .catch()
-window.addEventListener('unhandledrejection',function(e){
-  console.error('[HR] Promise não tratada:',e.reason);
-});
+  return true; // impede propagação para o console padrão do browser
+};
+
+window.onunhandledrejection=function(e){
+  console.error('[HR PROMISE ERROR]',e.reason);
+};
+
+// ═══ HELPER: $id com aviso seguro ═══
+window.$id=function(id){
+  var el=document.getElementById(id);
+  if(!el)console.warn('[HR] Elemento não encontrado:',id);
+  return el;
+};
 
 // ═══ INIT ═══
 document.addEventListener('DOMContentLoaded',function(){
@@ -238,6 +249,7 @@ window.aplicarEstiloNi=function(){
   });
   setLayout();
 
+  console.log('[HR] Inicializando configuração...');
   // ── BLINDAGEM DA INICIALIZAÇÃO (FASE 1 — item 1.1) ──────────────────
   // Se qualquer passo falhar, exibe mensagem amigável em vez de tela preta.
   try{
@@ -268,6 +280,7 @@ window.aplicarEstiloNi=function(){
   }
 
   // CFG carregou — continuar inicialização normal
+  console.log('[HR] Inicializando splash e orçamento...');
   try{ selMat=CFG.stones[0].id; }catch(e){ console.error('[HR] CFG.stones vazio:',e); }
 
   var now=new Date();
@@ -282,6 +295,7 @@ window.aplicarEstiloNi=function(){
   document.querySelectorAll('.ov').forEach(function(o){o.addEventListener('click',function(e){if(e.target===o)closeAll();});});
 
   // Build — cada função em try/catch independente: falha em uma não derruba as outras
+  console.log('[HR] Inicializando finanças, agenda, histórico...');
   var _buildFns=[
     ['buildMat',         function(){buildMat();}],
     ['addAmbiente',      function(){addAmbiente();}],
@@ -302,7 +316,8 @@ window.aplicarEstiloNi=function(){
   });
 
   // Sync automático via Supabase — sem precisar configurar nada
-  setTimeout(function(){try{SYNC.init();}catch(e){console.error('[HR] Falha no SYNC.init:',e);}},1500);
+  setTimeout(function(){try{SYNC.init();console.log('[HR] SYNC iniciado.');}catch(e){console.error('[HR] Falha no SYNC.init:',e);}},1500);
+  console.log('[HR] Sistema pronto ✓');
   // Handle any tap that happened before DOMContentLoaded finished
   if(window._pendingPg!==null){var pp=window._pendingPg;window._pendingPg=null;openApp(pp);}
 });
@@ -310,16 +325,25 @@ window.aplicarEstiloNi=function(){
 // ═══ SPLASH ═══
 function openApp(pg){
   var splash=document.getElementById('sSplash');
-  splash.classList.remove('on');
-  splash.style.display='none';
   var a=document.getElementById('sApp');
-  a.classList.add('on');
-  a.style.display='block';
-  setLayout();
-  requestAnimationFrame(function(){
+
+  // Animação de saída da splash (PASSO 4 — Módulo 1)
+  if(splash){
+    splash.style.transition='opacity .55s ease, transform .55s ease';
+    splash.style.opacity='0';
+    splash.style.transform='scale(1.05)';
+  }
+
+  setTimeout(function(){
+    if(splash){splash.classList.remove('on');splash.style.display='none';}
+    if(a){a.classList.add('on');a.style.display='block';}
     setLayout();
-    go(pg);
-  });
+    requestAnimationFrame(function(){
+      setLayout();
+      go(pg);
+    });
+  },560);
+
   window._pendingPg=null;
 }
 function voltarSplash(){
