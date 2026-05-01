@@ -4,8 +4,10 @@ function setFT(t){fType=t;document.querySelectorAll('[data-ftp]').forEach(functi
 function addTr(type,desc,value){DB.t.unshift({id:Date.now(),type:type,desc:desc,value:value,date:td()});DB.sv();renderFin();}
 function saveFin(){var desc=document.getElementById('fDesc').value.trim(),val=+document.getElementById('fVal').value||0,date=document.getElementById('fData').value;if(!desc){toast('Preencha a descrição');return;}DB.t.unshift({id:Date.now(),type:fType,desc:desc,value:val,date:date});DB.sv();renderFin();closeAll();document.getElementById('fDesc').value='';document.getElementById('fVal').value='';toast('✓ Lançado!');}
 function openEditTr(id){
+  // FASE 1 — item 1.2: forçar número para evitar falha silenciosa de tipo
   editTrId=+id;
-  var t=DB.t.find(function(x){return x.id===editTrId;});if(!t)return;
+  // Buscar com === (estrito) após garantir que ambos são número
+  var t=DB.t.find(function(x){return +x.id===editTrId;});if(!t){console.warn('[HR] openEditTr: id não encontrado:',id);return;}
   document.getElementById('teDesc').value=t.desc||'';
   document.getElementById('teVal').value=t.value||'';
   document.getElementById('teData').value=t.date||td();
@@ -14,7 +16,9 @@ function openEditTr(id){
 }
 function setTET(tp){document.querySelectorAll('[data-tet]').forEach(function(o){o.classList.toggle('on',o.dataset.tet===tp);});}
 function saveTrEdit(){
-  var t=DB.t.find(function(x){return x.id==editTrId;});if(!t)return;
+  // FASE 1 — item 1.2: === com coerção explícita nos dois lados
+  var t=DB.t.find(function(x){return +x.id===+editTrId;});
+  if(!t){console.warn('[HR] saveTrEdit: lançamento não encontrado, editTrId=',editTrId);toast('Lançamento não encontrado');return;}
   var tp=document.querySelector('[data-tet].on');
   t.type=tp?tp.dataset.tet:t.type;
   t.desc=document.getElementById('teDesc').value.trim()||t.desc;
@@ -22,7 +26,12 @@ function saveTrEdit(){
   t.date=document.getElementById('teData').value||t.date;
   DB.sv();renderFin();closeAll();toast('✓ Atualizado!');
 }
-function delTr(){if(!confirm('Excluir lançamento?'))return;DB.t=DB.t.filter(function(x){return x.id!=editTrId;});DB.sv();renderFin();closeAll();toast('✓ Excluído!');}
+function delTr(){
+  if(!confirm('Excluir lançamento?'))return;
+  // FASE 1 — item 1.2: === com coerção nos dois lados
+  DB.t=DB.t.filter(function(x){return +x.id!==+editTrId;});
+  DB.sv();renderFin();closeAll();toast('✓ Excluído!');
+}
 
 function _mesAtual(){return new Date().toISOString().slice(0,7);}
 function _mesLabel(ym){if(!ym)return'';var p=ym.split('-');var ms=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];return(ms[+p[1]-1]||p[1])+'/'+p[0].slice(2);}

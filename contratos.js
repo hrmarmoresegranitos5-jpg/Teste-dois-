@@ -1028,8 +1028,22 @@ function confirmarContrato(){
   if(!DB.t)DB.t=[];
   var _td=(q.tipo||'Serviço')+(q.mat?' · '+q.mat:'');
 
-  // Limpa lançamentos antigos deste orçamento e re-registra com a forma de pagamento atual
-  DB.t = DB.t.filter(function(t){ return String(t.qid) !== String(q.id); });
+  // FASE 1 — item 1.4: preservar lançamentos já marcados como recebidos.
+  // Antes apagava TUDO do orçamento, incluindo entradas já confirmadas.
+  // Agora: mantém os 'in' (recebidos), apaga apenas 'pend' (a receber) e 'note'.
+  var jaRecebidos=DB.t.filter(function(t){
+    return String(t.qid)===String(q.id) && t.type==='in';
+  });
+  if(jaRecebidos.length>0){
+    // Já há valores confirmados: remover só pendências, preservar recebidos
+    DB.t=DB.t.filter(function(t){
+      return String(t.qid)!==String(q.id) || t.type==='in';
+    });
+    console.log('[HR] confirmarContrato: preservados',jaRecebidos.length,'lançamento(s) já recebidos para o orçamento',q.id);
+  } else {
+    // Nenhum recebido ainda: limpa tudo e re-registra normalmente
+    DB.t=DB.t.filter(function(t){ return String(t.qid)!==String(q.id); });
+  }
 
   if(ehEntregaTotal){
     DB.t.unshift({id:Date.now(),type:'pend',desc:'💎 A receber 100% na entrega — '+escH(q.cli||'Cliente')+' ('+_td+')',value:vista,date:dataEntrega||new Date().toISOString().slice(0,10),qid:q.id});

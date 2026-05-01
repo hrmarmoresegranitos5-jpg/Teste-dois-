@@ -419,7 +419,7 @@ function buildCfg(){
       h+='<div class="cfg-row"><span class="cfg-lbl">Categoria</span><select class="cfginp" style="width:140px;" onchange="CFG.stones['+i+'].cat=this.value;buildMat();buildCatalog();buildPT();svCFG();">';
       ['Granito Cinza','Granito Preto','Granito Branco','Granito Verde','Mármore','Travertino','Quartzito','Ultra Compacto'].forEach(function(cat){h+='<option '+(s.cat===cat?'selected':'')+'>'+cat+'</option>';});
       h+='</select></div>';
-      h+='<div class="cfg-row"><span class="cfg-lbl">Preço R$/m²</span><input class="cfginp cfginp-w" type="number" value="'+s.pr+'" onchange="CFG.stones['+i+'].pr=+this.value;buildMat();buildCatalog();buildPT();svCFG();"></div>';
+      h+='<div class="cfg-row"><span class="cfg-lbl">Preço R$/m²</span><input class="cfginp cfginp-w" type="number" value="'+s.pr+'" onchange="CFG.stones['+i+'].pr=+this.value;buildMat();buildCatalog();buildPT();svCFG();try{renderAmbientes();}catch(e){}"></div>';
       h+='<div class="cfg-row"><span class="cfg-lbl">Acabamento</span><select class="cfginp" style="width:120px;" onchange="CFG.stones['+i+'].fin=this.value;svCFG();"><option '+(s.fin==='Polida'?'selected':'')+'>Polida</option><option '+(s.fin==='Escovada'?'selected':'')+'>Escovada</option></select></div>';
       h+='<div style="padding:9px 13px;border-top:1px solid #0c0c10;display:flex;justify-content:space-between;align-items:center;">';
       h+='<div style="display:flex;gap:6px;">';
@@ -531,8 +531,8 @@ function buildCfg(){
         h+='<div class="cfg-row" style="gap:6px;flex-wrap:wrap;">';
         // Nome editável
         h+='<input class="cfginp" value="'+escH(sv.l)+'" style="flex:1;min-width:120px;text-align:left;" onchange="CFG.svList['+i+'].l=this.value;svCFG();" placeholder="Nome do serviço">';
-        // Preço
-        h+='<input class="cfginp cfginp-w" type="number" value="'+sv.preco+'" style="width:72px;" onchange="CFG.svList['+i+'].preco=+this.value;CFG.sv[CFG.svList['+i+'].k]=+this.value;svCFG();" placeholder="R$">';
+        // Preço — FASE 1 item 1.5: renderAmbientes() garante atualização em tempo real no orçamento aberto
+        h+='<input class="cfginp cfginp-w" type="number" value="'+sv.preco+'" style="width:72px;" onchange="CFG.svList['+i+'].preco=+this.value;CFG.sv[CFG.svList['+i+'].k]=+this.value;svCFG();try{renderAmbientes();}catch(e){}" placeholder="R$">';
         // Unidade
         h+='<select class="cfginp" style="width:58px;padding:6px 4px;" onchange="CFG.svList['+i+'].u=this.value;svCFG();">';
         h+='<option '+(sv.u==='sf'?'selected':'')+'>sf</option>';

@@ -1,6 +1,23 @@
-function salvarAgenda(){if(!pendQ)return;var last=lastEnd();document.getElementById('diasMsg').textContent=(last?'Agenda ocupada até '+fd(last)+'. ':'')+'Quantos dias para entregar o serviço de '+pendQ.cli+'?';document.getElementById('diasIn').value='';document.getElementById('diasPrev').classList.remove('on');showMd('diasMd');}
+// FASE 1 — item 1.3: verificar pendQ e pendQ.id antes de usar
+function salvarAgenda(){
+  if(!pendQ||!pendQ.id){toast('Calcule um orçamento primeiro');return;}
+  var last=lastEnd();
+  document.getElementById('diasMsg').textContent=(last?'Agenda ocupada até '+fd(last)+'. ':'')+'Quantos dias para entregar o serviço de '+pendQ.cli+'?';
+  document.getElementById('diasIn').value='';
+  document.getElementById('diasPrev').classList.remove('on');
+  showMd('diasMd');
+}
 function prevDias(){var d=+document.getElementById('diasIn').value,p=document.getElementById('diasPrev');if(!d){p.classList.remove('on');return;}var s=lastEnd()||td();p.textContent='Início: '+fd(s)+'\nEntrega prevista: '+fd(addD(s,d));p.classList.add('on');}
-function confirmarAgenda(){var d=+document.getElementById('diasIn').value;if(!d||!pendQ){toast('Informe os dias');return;}var s=lastEnd()||td(),end=addD(s,d),q=pendQ;var job={id:Date.now(),cli:q.cli,desc:q.tipo+' — '+q.mat,start:s,end:end,value:q.vista,pago:0,obs:'',done:false};DB.j.unshift(job);DB.sv();closeAll();updUrgDot();toast('✓ '+q.cli+' agendado para '+fd(end));setTimeout(function(){showCB(q.cli+' já pagou os 50% de entrada (R$ '+fm(q.ent)+')?',function(){addTr('in','Entrada 50% — '+q.cli,q.ent);var j=DB.j.find(function(x){return x.id===job.id;});if(j){j.pago=q.ent;DB.sv();}hideCB();toast('✓ Entrada registrada!');},function(){hideCB();});},600);}
+function confirmarAgenda(){
+  var d=+document.getElementById('diasIn').value;
+  // FASE 1 — item 1.3: verificar pendQ.id também
+  if(!d||!pendQ||!pendQ.id){toast('Informe os dias');return;}
+  var s=lastEnd()||td(),end=addD(s,d),q=pendQ;
+  var job={id:Date.now(),cli:q.cli,desc:q.tipo+' — '+q.mat,start:s,end:end,value:q.vista,pago:0,obs:'',done:false};
+  DB.j.unshift(job);DB.sv();closeAll();updUrgDot();
+  toast('✓ '+q.cli+' agendado para '+fd(end));
+  setTimeout(function(){showCB(q.cli+' já pagou os 50% de entrada (R$ '+fm(q.ent)+')?',function(){addTr('in','Entrada 50% — '+q.cli,q.ent);var j=DB.j.find(function(x){return x.id===job.id;});if(j){j.pago=q.ent;DB.sv();}hideCB();toast('✓ Entrada registrada!');},function(){hideCB();});},600);
+}
 
 function openJobModal(id){
   editJobId=id;

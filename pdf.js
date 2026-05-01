@@ -1,5 +1,6 @@
 function gerarPDF(){
-  if(!pendQ){toast('Calcule um orçamento primeiro');return;}
+  // FASE 1 — item 1.3: verificar pendQ e pendQ.id (não só existência)
+  if(!pendQ||!pendQ.id){toast('Calcule um orçamento primeiro');return;}
   // Load PDF libs on-demand if not already loaded
   if(typeof html2canvas==='undefined'||typeof window.jspdf==='undefined'){
     toast('Carregando bibliotecas PDF...');
@@ -14,7 +15,7 @@ function gerarPDF(){
     document.head.appendChild(s1);
     return;
   }
-  if(!pendQ){toast('Calcule um orçamento primeiro');return;}
+  if(!pendQ||!pendQ.id){toast('Calcule um orçamento primeiro');return;}
   var q=pendQ;
   var emp=CFG.emp;
 

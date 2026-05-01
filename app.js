@@ -2,6 +2,12 @@ function initCFG(){
   var CFG_VER = 18;
   var storedVer = +localStorage.getItem('hr_cfg_ver') || 0;
 
+  // Garantia: DEF_STONES deve existir antes de qualquer coisa
+  if(typeof DEF_STONES === 'undefined' || !DEF_STONES || !DEF_STONES.length){
+    console.error('[HR] DEF_STONES não carregou — data.js carregou antes deste script?');
+    throw new Error('DEF_STONES indefinido. Verifique a ordem de carregamento dos scripts.');
+  }
+
   if(!CFG || storedVer < CFG_VER){
     if(!CFG){
       CFG={stones:JSON.parse(JSON.stringify(DEF_STONES)),coz:JSON.parse(JSON.stringify(DEF_COZ)),lav:JSON.parse(JSON.stringify(DEF_LAV)),ac:JSON.parse(JSON.stringify(DEF_ACESS)),emp:JSON.parse(JSON.stringify(DEF_EMP)),sv:JSON.parse(JSON.stringify(DEF_SV)),fixos:JSON.parse(JSON.stringify(DEF_FIXOS))};
@@ -90,6 +96,28 @@ var selMat=null,pendQ=null,fType='in',catF='Todos',cubaCat='coz',cfgTab=0,editTr
 // Ambientes: cada um tem id, tipo, pecas[], selCuba
 var ambientes=[];
 var _cubaPickKey=null;
+
+// ═══ BLINDAGEM GLOBAL DE ERROS (FASE 1 — item 1.1) ═══
+// Captura erros JS não tratados e evita tela preta.
+window.addEventListener('error',function(e){
+  console.error('[HR] Erro global:',e.message,'|',e.filename,'linha',e.lineno);
+  // Se o shell ficou preto por uma falha antes de sApp.on, corrige a cor
+  try{
+    var shell=document.getElementById('shell');
+    if(shell&&(shell.style.background==='rgb(7, 7, 9)'||shell.style.background==='#070709')){
+      shell.style.background='var(--bg)';
+    }
+  }catch(_){}
+  // Toast seguro: usa a função se já carregou, senão cria alerta inline
+  try{toast('⚠️ Erro interno. Tente novamente.');}catch(_){
+    var t=document.getElementById('toast');
+    if(t){t.textContent='⚠️ Erro interno.';t.classList.add('on');setTimeout(function(){t.classList.remove('on');},3000);}
+  }
+});
+// Captura Promises rejeitadas sem .catch()
+window.addEventListener('unhandledrejection',function(e){
+  console.error('[HR] Promise não tratada:',e.reason);
+});
 
 // ═══ INIT ═══
 document.addEventListener('DOMContentLoaded',function(){
@@ -210,23 +238,71 @@ window.aplicarEstiloNi=function(){
   });
   setLayout();
 
-  initCFG();
-  selMat=CFG.stones[0].id;
+  // ── BLINDAGEM DA INICIALIZAÇÃO (FASE 1 — item 1.1) ──────────────────
+  // Se qualquer passo falhar, exibe mensagem amigável em vez de tela preta.
+  try{
+    initCFG();
+  }catch(initErr){
+    console.error('[HR] Falha em initCFG:',initErr);
+    // CFG pode estar corrompido: reiniciar com defaults
+    try{
+      localStorage.removeItem('hr_cfg');
+      localStorage.removeItem('hr_cfg_ver');
+      CFG=null;
+      initCFG();
+      console.warn('[HR] CFG resetado para defaults após falha.');
+    }catch(resetErr){
+      console.error('[HR] Falha fatal no reset de CFG:',resetErr);
+      var shell=document.getElementById('shell');
+      if(shell){
+        shell.style.background='#0a0a0f';
+        shell.innerHTML='<div style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a0a0f;color:#C9A84C;font-family:Outfit,sans-serif;padding:32px;text-align:center;">'
+          +'<div style="font-size:2.5rem;margin-bottom:16px;">⚠️</div>'
+          +'<div style="font-size:1rem;font-weight:700;margin-bottom:8px;">Erro ao carregar o aplicativo</div>'
+          +'<div style="font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:24px;line-height:1.6;">Os dados de configuração estão corrompidos.<br>Limpe o cache do navegador e tente novamente.</div>'
+          +'<button onclick="localStorage.clear();location.reload();" style="background:#C9A84C;color:#000;border:none;border-radius:10px;padding:12px 24px;font-family:Outfit,sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;">🔄 Limpar e recarregar</button>'
+          +'</div>';
+      }
+      return; // aborta o init completamente
+    }
+  }
+
+  // CFG carregou — continuar inicialização normal
+  try{ selMat=CFG.stones[0].id; }catch(e){ console.error('[HR] CFG.stones vazio:',e); }
+
   var now=new Date();
   document.getElementById('hdrDate').textContent=now.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short'});
   document.getElementById('jStart').value=td();
   document.getElementById('fData').value=td();
   // Listeners
   document.addEventListener('click',dispatch);
-  // oTipo is now per-ambiente, no global listener needed
   document.getElementById('diasIn').addEventListener('input',prevDias);
   document.getElementById('jDias').addEventListener('input',prevJobDias);
   document.getElementById('fileInp').addEventListener('change',onFile);
   document.querySelectorAll('.ov').forEach(function(o){o.addEventListener('click',function(e){if(e.target===o)closeAll();});});
-  // Build
-  buildMat();addAmbiente();buildCatalog();buildCubaList();buildAcList();renderAg();renderFin();updEmp();updUrgDot();renderFixos();renderInfoList();renderOrc();
+
+  // Build — cada função em try/catch independente: falha em uma não derruba as outras
+  var _buildFns=[
+    ['buildMat',         function(){buildMat();}],
+    ['addAmbiente',      function(){addAmbiente();}],
+    ['buildCatalog',     function(){buildCatalog();}],
+    ['buildCubaList',    function(){buildCubaList();}],
+    ['buildAcList',      function(){buildAcList();}],
+    ['renderAg',         function(){renderAg();}],
+    ['renderFin',        function(){renderFin();}],
+    ['updEmp',           function(){updEmp();}],
+    ['updUrgDot',        function(){updUrgDot();}],
+    ['renderFixos',      function(){renderFixos();}],
+    ['renderInfoList',   function(){renderInfoList();}],
+    ['renderOrc',        function(){renderOrc();}]
+  ];
+  _buildFns.forEach(function(pair){
+    try{ pair[1](); }
+    catch(e){ console.error('[HR] Falha em '+pair[0]+':',e); }
+  });
+
   // Sync automático via Supabase — sem precisar configurar nada
-  setTimeout(function(){SYNC.init();},1500);
+  setTimeout(function(){try{SYNC.init();}catch(e){console.error('[HR] Falha no SYNC.init:',e);}},1500);
   // Handle any tap that happened before DOMContentLoaded finished
   if(window._pendingPg!==null){var pp=window._pendingPg;window._pendingPg=null;openApp(pp);}
 });
@@ -343,7 +419,7 @@ function dispatch(e){
   el=e.target.closest('#btnAI');if(el){document.getElementById('aiDesc').value='';document.getElementById('aiStatus').textContent='';document.getElementById('aiStatus').className='ai-status';document.getElementById('aiResultBox').style.display='none';document.getElementById('btnAIAplicar').style.display='none';showMd('aiMd');return;}
   el=e.target.closest('#btnAIEnviar');if(el){aiInterpretar();return;}
   el=e.target.closest('#btnAIAplicar');if(el){aiAplicar();return;}
-  el=e.target.closest('.btn-contrato');if(el&&el.dataset.cid){gerarContrId(el,e);return;}
+  el=e.target.closest('.btn-contrato');if(el){gerarContrId(el,e);return;}
   el=e.target.closest('#btnCalc');if(el){calcular();return;}
   el=e.target.closest('#btnCopy');if(el){copiar();return;}
   el=e.target.closest('#btnPDF');if(el){gerarPDF();return;}
