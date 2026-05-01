@@ -84,7 +84,6 @@ function gerarPDF(){
           +'<td style="padding:9px 14px;background:#fffbf0;border-bottom:1px solid #f0e8c8;font-size:11px;text-align:right;font-weight:900;color:#7a4400;">R$ '+fm(cs.valor)+'</td>'
           +'</tr>';
       });
-      }
     });
   } else {
     (q.pds||[]).forEach(function(p,i){
