@@ -102,21 +102,20 @@ var _cubaPickKey=null;
 console.log('[HR] App iniciando...');
 
 window.onerror=function(msg,src,line,col,error){
-  console.error('[HR ERROR]',{msg:msg,src:src,line:line,col:col,error:error});
-  var err=document.getElementById('globalCrash');
-  if(!err){
-    err=document.createElement('div');
-    err.id='globalCrash';
-    err.style.cssText='position:fixed;inset:0;z-index:999999;background:linear-gradient(180deg,#120f08,#1b1409);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:Outfit,sans-serif;padding:24px;text-align:center;';
-    err.innerHTML='<div style="font-size:65px;margin-bottom:15px;">⚠️</div>'
-      +'<div style="font-size:22px;font-weight:700;color:#C9A84C;margin-bottom:8px;">Erro interno detectado</div>'
-      +'<div style="font-size:13px;opacity:.7;max-width:280px;line-height:1.5;margin-bottom:6px;">O sistema encontrou um erro durante a inicialização.</div>'
-      +'<div style="font-size:11px;opacity:.45;max-width:300px;line-height:1.4;word-break:break-all;margin-bottom:20px;">'+msg+' (linha '+line+')</div>'
-      +'<button onclick="location.reload()" style="background:#C9A84C;border:none;color:#111;padding:12px 22px;border-radius:14px;font-weight:700;cursor:pointer;font-family:Outfit,sans-serif;font-size:15px;">Recarregar Sistema</button>'
-      +'<button onclick="localStorage.clear();location.reload()" style="margin-top:10px;background:transparent;border:1px solid rgba(201,168,76,.3);color:rgba(201,168,76,.6);padding:9px 18px;border-radius:12px;font-weight:600;cursor:pointer;font-family:Outfit,sans-serif;font-size:12px;">Limpar dados e recarregar</button>';
-    document.body.appendChild(err);
-  }
-  return true; // impede propagação para o console padrão do browser
+  console.error('[HR ERROR]',msg,'linha',line);
+  if(document.getElementById('globalCrash'))return true;
+  var d=document.createElement('div');
+  d.id='globalCrash';
+  d.style.cssText='position:fixed;inset:0;z-index:999999;background:#120f08;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:sans-serif;padding:24px;text-align:center;';
+  var ic=document.createElement('div');ic.textContent='\u26A0\uFE0F';ic.style.fontSize='60px';
+  var t1=document.createElement('div');t1.textContent='Erro interno detectado';t1.style.cssText='font-size:20px;font-weight:700;color:#C9A84C;margin:12px 0 6px;';
+  var t2=document.createElement('div');t2.textContent='O sistema encontrou um erro.';t2.style.cssText='font-size:13px;opacity:.7;margin-bottom:6px;';
+  var t3=document.createElement('div');t3.textContent=msg+' (linha '+line+')';t3.style.cssText='font-size:11px;opacity:.4;margin-bottom:20px;max-width:300px;word-break:break-all;';
+  var b1=document.createElement('button');b1.textContent='Recarregar Sistema';b1.onclick=function(){location.reload();};b1.style.cssText='background:#C9A84C;border:none;color:#111;padding:12px 22px;border-radius:14px;font-weight:700;cursor:pointer;font-size:15px;margin-bottom:8px;';
+  var b2=document.createElement('button');b2.textContent='Limpar dados e recarregar';b2.onclick=function(){localStorage.clear();location.reload();};b2.style.cssText='background:transparent;border:1px solid rgba(201,168,76,.3);color:rgba(201,168,76,.6);padding:9px 18px;border-radius:12px;font-weight:600;cursor:pointer;font-size:12px;';
+  d.appendChild(ic);d.appendChild(t1);d.appendChild(t2);d.appendChild(t3);d.appendChild(b1);d.appendChild(b2);
+  document.body.appendChild(d);
+  return true;
 };
 
 window.onunhandledrejection=function(e){
