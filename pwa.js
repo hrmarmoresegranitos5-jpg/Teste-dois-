@@ -1,6 +1,13 @@
-// PWA Service Worker
+// PWA Service Worker — desregistra todos os SWs antigos e limpa caches
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').catch(function(){});
+  navigator.serviceWorker.getRegistrations().then(function(regs){
+    regs.forEach(function(r){r.unregister();});
+  });
+  if(window.caches){
+    caches.keys().then(function(keys){
+      keys.forEach(function(k){caches.delete(k);});
+    });
+  }
 }
 
 // PWA Install Button
