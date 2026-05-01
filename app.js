@@ -340,6 +340,8 @@ function openApp(pg){
     requestAnimationFrame(function(){
       setLayout();
       go(pg);
+      // Segundo setLayout após go() para garantir que pages tem altura correta
+      setTimeout(function(){setLayout();},80);
     });
   },560);
 
@@ -368,9 +370,11 @@ function go(n){
   var _sApp=document.getElementById('sApp');
   var _sSplash=document.getElementById('sSplash');
   var _sIntro=document.getElementById('sIntro');
-  if(_sApp){_sApp.classList.add('on');}
-  if(_sSplash){_sSplash.classList.remove('on');_sSplash.style.display='none';}
-  if(_sIntro){_sIntro.style.display='none';}
+  // Só ativa sApp se ele ainda não está ativo (não forçar durante init)
+  if(_sApp&&_sApp.classList.contains('on')){
+    if(_sSplash){_sSplash.classList.remove('on');_sSplash.style.display='none';}
+    if(_sIntro){_sIntro.style.display='none';}
+  }
   var actualId=n===7?'2b':n;
   document.querySelectorAll('.ni').forEach(function(t){t.classList.toggle('on',+t.dataset.pg===n);});
   document.querySelectorAll('.pg').forEach(function(p){
