@@ -1,4 +1,4 @@
-// PWA Service Worker — desregistra todos os SWs antigos e limpa caches
+// PWA Service Worker — desregistra SWs antigos e limpa caches
 if('serviceWorker' in navigator){
   navigator.serviceWorker.getRegistrations().then(function(regs){
     regs.forEach(function(r){r.unregister();});
@@ -88,5 +88,3 @@ document.addEventListener('DOMContentLoaded', function(){
 })();
 
 function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');setTimeout(function(){t.classList.remove('on');},2500);}
-
-</script>
